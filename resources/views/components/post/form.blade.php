@@ -18,6 +18,20 @@
 
     </x-form-item>
 
+    <x-form-item>
+
+        <x-label requried>{{ __('Publication Date') }}</x-label>
+
+        <x-input name="published_at" placeholder="dd.mm.yyyy" />
+
+    </x-form-item>
+
+    <x-form-item>
+
+        <x-checkbox name="published">{{ __('Published') }}</x-label>
+
+    </x-form-item>
+
     {{ $slot }}
 
 </x-form>

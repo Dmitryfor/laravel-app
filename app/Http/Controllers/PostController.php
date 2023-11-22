@@ -3,44 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Post;
 
 class PostController extends Controller
 {
     
     public function index( Request $request ) 
     {
-        $search = $request->input('search');
-        $category_id = $request->input('category_id');
-
-        $post = [
-            'id'       => 10,
-            'title'    => 'Lorem ipsum dolor sit amet.',
-            'content'  => 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Earum, natus!',
-            'category_id' => 1,
-        ];
-
-        $posts = array_fill(0, 10, $post);
-
-        $posts = array_filter($posts, function($post) use ( $search, $category_id ) {
-            if ($search && ! str_contains( strtolower($post['title']), strtolower($search) )) {
-                return false;
-            }
-
-            if ($category_id && $category_id != $post['category_id'] ) {
-                return false;
-            }
-
-            return true;
-        });
-
         $categories = [
             null => 'Select a Category', 
             '1' => 'First Category', 
             '2' => 'Second Category'
         ];
 
-        return view('posts.index', compact('posts', 'categories'));
+        $posts = Post::all(['id', 'title', 'published_at']);
 
+        $posts = Post::query()->get(['id', 'title', 'published_at']);
+
+        // Pagination
+        $validated = $request->validate([
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page'  => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $limit  = $validated['limit'] ?? 6;
+        $page   = $validated['page'] ?? 1;
+        $offset = $limit * ($page - 1);
+
+        $posts  = Post::query()->limit($limit)->offset($offset)->get(['id', 'title', 'published_at']);
+
+
+        // select * from posts order by published_at desc
+        $posts = Post::query()->orderBy('published_at', 'DESC')->paginate(3, ['id', 'title', 'published_at']);
+        $posts = Post::query()->latest('published_at')->paginate(3, ['id', 'title', 'published_at']);
+
+        return view('posts.index', compact('posts', 'categories'));
     }
 
     public function show() 

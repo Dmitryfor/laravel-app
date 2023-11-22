@@ -24,6 +24,8 @@
 
         </div>
 
+        {{ $posts->links() }}
+
     @else 
 
         <div>{{ __('No posts were found.') }}</div>

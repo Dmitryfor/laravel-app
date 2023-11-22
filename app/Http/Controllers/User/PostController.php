@@ -4,20 +4,15 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Post;
+use App\Models\User;
 
 class PostController extends Controller
 {
     
     public function index() 
     {
-
-        $post = [
-            'id'       => 10,
-            'title'    => 'Lorem ipsum dolor sit amet.',
-            'content'  => 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Earum, natus!',
-        ];
-
-        $posts = array_fill(0, 10, $post);
+        $posts = Post::query()->paginate(6);
 
         return view('user.posts.index', compact('posts'));
     }
@@ -41,10 +36,20 @@ class PostController extends Controller
 
     public function store( Request $request ) 
     {
-        // $title = $request->input('title');
-        // $content = $request->input('content');
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:100'],
+            'content' => ['required', 'string', 'max:100000'],
+            'published_at' => ['nullable', 'string', 'date'],
+            'published' => ['nullable', 'boolean'],
+        ]);
 
-        // dd( $title, $content );
+        $post = Post::query()->create([
+            'user_id'   => User::query()->value('id'),
+            'title'     => $validated['title'],
+            'content'   => $validated['content'],
+            'published_at' => $validated['published_at'] ?? null,
+            'published' => $validated['published'] ?? false,
+        ]);
 
         alert(__('Saved!'));
 
