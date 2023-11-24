@@ -4,19 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
-
-use function PHPUnit\Framework\callback;
+use Carbon\Carbon;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class PostController extends Controller
 {
     
     public function index( Request $request ) 
     {
-        $categories = [
-            null => 'Select a Category', 
-            '1' => 'First Category', 
-            '2' => 'Second Category'
-        ];
+        // $categories = [
+        //     null => 'Select a Category', 
+        //     '1' => 'First Category', 
+        //     '2' => 'Second Category'
+        // ];
 
         $posts = Post::all(['id', 'title', 'published_at']);
 
@@ -39,9 +39,41 @@ class PostController extends Controller
         $posts = Post::query()->orderBy('published_at', 'DESC')->paginate(3, ['id', 'title', 'published_at']);
 
         // Current Query
-        $posts = Post::query()->latest('published_at')->paginate(3);
+        $validated = $request->validate([
+            'search'     => ['nullable', 'string', 'max:50'],
+            'start_date' => ['nullable', 'string', 'date'],
+            'end_date'   => ['nullable', 'string', 'date', 'after:start_date'],
+            'tag'        => ['nullable', 'string', 'max:10'],
+        ]);
 
-        return view('posts.index', compact('posts', 'categories'));
+        $search    = $validated['search'] ?? null;
+        $startDate = $validated['start_date'] ?? null;
+        $endDate   = $validated['end_date'] ?? null;
+        $tag       = $validated['tag'] ?? null;
+
+        $query = Post::query()
+            ->where('published', true)
+            ->whereNotNull('published_at');
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($startDate) {
+            $query->where('published_at', '>=', new Carbon($startDate));
+        }
+
+        if ($endDate) {
+            $query->where('published_at', '<=', new Carbon($endDate));
+        }
+
+        if ($tag) {
+            $query->whereJsonContains('tags', $tag);
+        }
+
+        $posts = $query->latest('published_at')->paginate(6);
+
+        return view('posts.index', compact('posts'));
     }
 
     public function show( Request $request, Post $post ) 

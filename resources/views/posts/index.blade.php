@@ -8,7 +8,7 @@
 
     @include('posts.filter')
 
-    @if ( ! empty($posts) )
+    @if ( ! $posts->isEmpty() )
 
         <div class="row">
     
