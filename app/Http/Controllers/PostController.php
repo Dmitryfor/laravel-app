@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 
+use function PHPUnit\Framework\callback;
+
 class PostController extends Controller
 {
     
@@ -35,22 +37,30 @@ class PostController extends Controller
 
         // select * from posts order by published_at desc
         $posts = Post::query()->orderBy('published_at', 'DESC')->paginate(3, ['id', 'title', 'published_at']);
-        $posts = Post::query()->latest('published_at')->paginate(3, ['id', 'title', 'published_at']);
+
+        // Current Query
+        $posts = Post::query()->latest('published_at')->paginate(3);
 
         return view('posts.index', compact('posts', 'categories'));
     }
 
-    public function show() 
+    public function show( Request $request, Post $post ) 
     {
+        // select * from posts order by published_at asc limit 1
+        // $post = Post::query()->oldest('published_at')->firstOrFail(['id', 'title', 'content']);
 
-        $post = [
-            'id'       => 10,
-            'title'    => 'Lorem ipsum dolor sit amet.',
-            'content'  => 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Earum, natus!',
-        ];
+        // select id, title, content, published_at from posts where id in (1, 2, 3, 4)
+        // $post = Post::query()->find(['1, 2, 3, 4'], ['id', 'title', 'content', 'published_at']);
 
-        return view('posts.show', compact('post'));
+        // select id, title, content, published_at from posts where id=123 limit 1
+        // $post = Post::query()->findOrFail($post, ['id', 'title', 'content', 'published_at']);
 
+        // With cache
+        // $post = cache()->remember("posts.{$post}", now()->addHour(), function() use($post) {
+        //     return Post::query()->findOrFail($post);
+        // });
+
+        return view('posts.show', compact('post'));    
     }
 
     public function create() 
