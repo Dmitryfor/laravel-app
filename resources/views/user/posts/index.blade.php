@@ -32,7 +32,7 @@
 
                 </h2>
 
-                <div class="small text-muted">{{ $post['published_at']->format('d.m.Y') }}</div>
+                <div class="small text-muted">{{ $post['published_at']?->format('d.m.Y') }}</div>
 
             </div>
             

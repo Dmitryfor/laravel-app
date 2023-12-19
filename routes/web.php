@@ -6,6 +6,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\User\PostController as UserPostController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\User\DonateController;
 use App\Http\Middleware\LogMiddleware;
 
 /*
@@ -46,6 +47,8 @@ Route::prefix('user')->group( function() {
     Route::get('posts/{post}/edit', [ UserPostController::class, 'edit' ])->name('user.posts.edit');
 
     Route::put('posts/{post}', [ UserPostController::class, 'update' ])->name('user.posts.update');
+
+    Route::get('donates', DonateController::class)->name('user.donates');
 
 } );
 
